@@ -9,13 +9,15 @@ function destinoSeguro(next: unknown): string {
   return typeof next === "string" && next.startsWith("/") && !next.startsWith("//") ? next : "/";
 }
 
-export async function login(_prev: { error?: string }, form: FormData): Promise<{ error?: string }> {
+export type LoginState = { error?: string; user?: string };
+
+export async function login(_prev: LoginState, form: FormData): Promise<LoginState> {
   const user = String(form.get("user") ?? "").trim();
   const password = String(form.get("password") ?? "");
   if (!credencialesValidas(user, password)) {
     // Pequeña pausa para frenar intentos por fuerza bruta.
     await new Promise((r) => setTimeout(r, 500));
-    return { error: "Usuario o contraseña incorrectos" };
+    return { error: "Usuario o contraseña incorrectos", user };
   }
   (await cookies()).set(SESSION_COOKIE, await crearSesion(user), {
     httpOnly: true,

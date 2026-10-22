@@ -88,7 +88,8 @@ async function cargarShard(base: string, shard: number): Promise<Record<string, 
     signal: AbortSignal.timeout(8000),
     next: { revalidate: 86_400 },
   });
-  if (res.status === 404 || res.status === 400) return {};
+  // Los 2.048 archivos existen siempre que se hayan subido: un 404 significa que falta publicarlos.
+  if (res.status === 404 || res.status === 400) throw new Error("las fichas del SII aún no están publicadas (npm run upload:sii)");
   if (!res.ok) throw new Error(`SII shard ${shard}: HTTP ${res.status}`);
   const buf = Buffer.from(await res.arrayBuffer());
   // Supabase puede entregarlo ya descomprimido si el cliente negoció gzip.

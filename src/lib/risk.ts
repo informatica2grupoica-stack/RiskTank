@@ -103,7 +103,7 @@ export function evaluarRiesgo(input: RiskInput): { score: number | null; nivel: 
         fuente: inicio.fuente,
         puntos: 12,
       });
-    } else if (meses >= 36) {
+    } else if (meses >= 36 && !sii?.tg) {
       alertas.push({
         codigo: "EMPRESA_ANTIGUA",
         severidad: "positiva",

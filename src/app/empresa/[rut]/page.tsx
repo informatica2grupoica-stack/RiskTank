@@ -82,11 +82,15 @@ export default async function Empresa({ params }: { params: Promise<{ rut: strin
             </p>
           )}
           <dl className="px-5 py-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-            <dt className="text-muted">Constitución</dt><dd>{fecha(constitucion?.fecha_actuacion)}</dd>
-            <dt className="text-muted">Aprobación SII</dt><dd>{fecha(constitucion?.fecha_aprobacion)}</dd>
-            <dt className="text-muted">Capital</dt><dd>{pesos(ultima?.capital)}</dd>
-            <dt className="text-muted">Comuna</dt><dd>{titleCase(ultima?.comuna_social)}</dd>
-            <dt className="text-muted">Región</dt><dd>{nombreRegion(ultima?.region_social)}</dd>
+            {p.actuaciones.length > 0 && (
+              <>
+                <dt className="text-muted">Constitución</dt><dd>{fecha(constitucion?.fecha_actuacion)}</dd>
+                <dt className="text-muted">Aprobación SII</dt><dd>{fecha(constitucion?.fecha_aprobacion)}</dd>
+                <dt className="text-muted">Capital</dt><dd>{pesos(ultima?.capital)}</dd>
+                <dt className="text-muted">Comuna</dt><dd>{titleCase(ultima?.comuna_social)}</dd>
+                <dt className="text-muted">Región</dt><dd>{nombreRegion(ultima?.region_social)}</dd>
+              </>
+            )}
             <dt className="text-muted">Mercado Público</dt>
             <dd>
               {p.mercadoPublico.estado === "sin_ticket"

@@ -6,7 +6,8 @@
 import "./lib/env";
 import fs from "node:fs";
 import path from "node:path";
-import { SII_VERSION } from "../src/lib/sii";
+import { getDb, setFuenteEstado } from "../src/lib/db";
+import { SII_VERSION, type ManifestSii } from "../src/lib/sii";
 import { DATA_DIR } from "./lib/download";
 
 const BUCKET = "sii";
@@ -64,6 +65,15 @@ async function main() {
     }
   }
   await Promise.all(Array.from({ length: CONCURRENCIA }, trabajador));
+  const manifest = JSON.parse(fs.readFileSync(path.join(DIR, "manifest.json"), "utf8")) as ManifestSii;
+  const db = getDb();
+  await setFuenteEstado(db, {
+    fuente: "sii",
+    nombre: `Nóminas de personas jurídicas SII (publicación ${manifest.publicacion})`,
+    url: "https://www.sii.cl/sobre_el_sii/nominapersonasjuridicas.html",
+    registros: manifest.contribuyentes,
+  });
+  await db.$disconnect();
   console.log(`Listo: ${hechos} archivos. URL pública: ${url}/storage/v1/object/public/${BUCKET}/${SII_VERSION}/`);
 }
 

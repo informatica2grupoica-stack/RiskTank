@@ -14,6 +14,8 @@ Base de datos: Postgres en [Supabase](https://supabase.com) (plan gratuito) con 
 npm install
 npm run db:migrate   # crea tablas, índices de texto completo y activa RLS
 npm run ingest       # descarga las fuentes y las carga en Supabase (~20-40 min la primera vez)
+npm run build:sii    # arma las fichas del SII (3,4 M de contribuyentes, ~190 MB comprimidos)
+npm run upload:sii   # las sube al bucket público "sii" de Supabase Storage (requiere SUPABASE_SECRET_KEY)
 npm run dev          # http://localhost:3000
 ```
 
@@ -30,6 +32,7 @@ La carga de datos (`npm run ingest`) se ejecuta desde tu equipo, no en Vercel.
 | Registro de Empresas y Sociedades (datos.gob.cl) | Descarga CSV, `npm run ingest:res` | Razón social, fecha de constitución, tipo de sociedad, capital, comuna. Solo sociedades creadas vía «Tu Empresa en un Día» desde 2013. |
 | OFAC SDN + alias (EE.UU.) | Descarga CSV, `npm run ingest:sanciones` | Coincidencias de nombre con la lista de sanciones. |
 | Lista consolidada del Consejo de Seguridad ONU | Descarga XML, `npm run ingest:sanciones` | Ídem. |
+| Nóminas de personas jurídicas del SII | ZIP/TSV, `npm run build:sii` + `upload:sii` | Razón social, inicio de actividades, término de giro, giros, domicilio, sucursales, tramo de ventas, trabajadores, rubro, régimen. Se guardan como 2.048 archivos JSON comprimidos en Supabase Storage (no caben en la base gratuita). |
 | Mercado Público (ChileCompra) | API en línea con caché de 7 días | Si el RUT está registrado como proveedor del Estado. Requiere `MERCADOPUBLICO_TICKET`. |
 
 Vuelve a correr `npm run ingest` periódicamente para actualizar (el RES se publica mensualmente).
@@ -51,6 +54,14 @@ Reglas determinísticas en [`src/lib/risk.ts`](src/lib/risk.ts). Base 20 puntos,
 
 Niveles: bajo < 30 ≤ medio < 50 ≤ alto < 75 ≤ crítico. Sin datos en ninguna fuente → «Sin datos» (no se inventa un score).
 
+Señales del SII: término de giro (+60), sin ventas (+12), sin giros vigentes (+10), caída de 2+ tramos de ventas (+10),
+capital propio negativo (+10), 3+ cambios de domicilio en 24 meses (+10), sin trabajadores (+4), empresa mediana o grande (−5).
+
+## Acceso
+
+Login de un usuario con `AUTH_USER` / `AUTH_PASSWORD` (por defecto **admin / admin**: cámbialos en Vercel).
+La sesión es una cookie firmada (HMAC) que dura 7 días; `src/proxy.ts` protege todas las páginas y la API.
+
 ## API
 
 - `GET /api/empresa/{rut}`: perfil completo en JSON.
@@ -68,4 +79,4 @@ data/               descargas de las fuentes (no se versiona)
 
 ## Pendiente
 
-Monitoreo de cartera con alertas por cambios, red societaria, multas de la DT y Boletín Concursal (sin dataset abierto encontrado aún), autenticación.
+Monitoreo de cartera con alertas por cambios, red societaria, multas de la DT y Boletín Concursal (sin dataset abierto encontrado aún), búsqueda por nombre sobre todo el SII (hoy solo busca en el RES).

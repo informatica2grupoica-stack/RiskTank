@@ -72,3 +72,9 @@ test("sin ventas y caída de tramo no se duplican", () => {
   assert.ok(codigos.includes("SIN_VENTAS"));
   assert.ok(!codigos.includes("CAIDA_VENTAS"));
 });
+
+test("una empresa con término de giro no suma puntos por antigüedad", () => {
+  const r = evaluarRiesgo({ hoy, actuaciones: [constitucion("2013-05-02")], sanciones: [], sii: { n: "X", tg: "2018-06-28" } });
+  assert.ok(!r.alertas.some((a) => a.codigo === "EMPRESA_ANTIGUA"));
+  assert.equal(r.score, 80);
+});

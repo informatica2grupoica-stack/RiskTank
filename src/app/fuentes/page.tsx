@@ -6,7 +6,8 @@ const PENDIENTES = [
   { nombre: "Mercado Público (ChileCompra)", nota: "En línea. Requiere ticket gratuito en MERCADOPUBLICO_TICKET." },
   { nombre: "Multas Dirección del Trabajo", nota: "Sin dataset abierto encontrado; pendiente." },
   { nombre: "Boletín Concursal", nota: "Sin dataset abierto encontrado; pendiente." },
-  { nombre: "SII / Poder Judicial", nota: "Protegidos con captcha; no se automatizan." },
+  { nombre: "Situación tributaria SII / Poder Judicial", nota: "Protegidos con captcha; no se automatizan." },
+  { nombre: "Representantes legales y listas PEP", nota: "Sin fuente pública gratuita." },
 ];
 
 export default async function Fuentes() {

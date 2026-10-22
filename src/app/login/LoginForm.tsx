@@ -12,9 +12,11 @@ export function LoginForm({ next }: { next?: string }) {
         <span className="text-sm text-muted">Usuario</span>
         <input
           name="user"
+          defaultValue={state.user}
+          key={state.user ?? ""}
           autoComplete="username"
           required
-          autoFocus
+          autoFocus={!state.user}
           className="w-full rounded-lg border border-border bg-background px-3 py-2 outline-none focus:border-accent"
         />
       </label>
@@ -23,6 +25,7 @@ export function LoginForm({ next }: { next?: string }) {
         <input
           name="password"
           type="password"
+          autoFocus={Boolean(state.user)}
           autoComplete="current-password"
           required
           className="w-full rounded-lg border border-border bg-background px-3 py-2 outline-none focus:border-accent"
