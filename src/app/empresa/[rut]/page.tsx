@@ -81,7 +81,6 @@ export default async function Empresa({ params }: { params: Promise<{ rut: strin
             <dt className="text-muted">Capital</dt><dd>{pesos(ultima?.capital)}</dd>
             <dt className="text-muted">Comuna</dt><dd>{titleCase(ultima?.comuna_social)}</dd>
             <dt className="text-muted">Región</dt><dd>{nombreRegion(ultima?.region_social)}</dd>
-            <dt className="text-muted">Comuna trib.</dt><dd>{titleCase(ultima?.comuna_tributaria)}</dd>
             <dt className="text-muted">Mercado Público</dt>
             <dd>
               {p.mercadoPublico.estado === "sin_ticket"

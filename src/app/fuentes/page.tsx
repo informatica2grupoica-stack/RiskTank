@@ -2,8 +2,6 @@ import { getDb } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-type Fuente = { fuente: string; nombre: string; url: string | null; actualizado_en: string; registros: number };
-
 const PENDIENTES = [
   { nombre: "Mercado Público (ChileCompra)", nota: "En línea. Requiere ticket gratuito en MERCADOPUBLICO_TICKET." },
   { nombre: "Multas Dirección del Trabajo", nota: "Sin dataset abierto encontrado; pendiente." },
@@ -11,8 +9,8 @@ const PENDIENTES = [
   { nombre: "SII / Poder Judicial", nota: "Protegidos con captcha; no se automatizan." },
 ];
 
-export default function Fuentes() {
-  const fuentes = getDb().prepare(`SELECT * FROM fuente_estado ORDER BY fuente`).all() as Fuente[];
+export default async function Fuentes() {
+  const fuentes = await getDb().fuenteEstado.findMany({ orderBy: { fuente: "asc" } });
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-semibold">Fuentes de datos</h1>
@@ -24,7 +22,7 @@ export default function Fuentes() {
               {f.url ? <a href={f.url} className="hover:underline" target="_blank" rel="noreferrer">{f.nombre}</a> : f.nombre}
             </span>
             <span className="text-sm tabular-nums">{f.registros.toLocaleString("es-CL")} registros</span>
-            <span className="text-sm text-muted">Actualizado {new Date(f.actualizado_en).toLocaleString("es-CL")}</span>
+            <span className="text-sm text-muted">Actualizado {new Date(f.actualizadoEn).toLocaleString("es-CL")}</span>
           </div>
         ))}
       </section>

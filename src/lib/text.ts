@@ -31,9 +31,13 @@ export function nameKey(name: string): string {
   return significantTokens(name).join(" ");
 }
 
-/** Convierte texto libre en una consulta FTS5 segura (prefijo en el último término). */
-export function toFtsQuery(input: string): string | null {
+/**
+ * Convierte texto libre en un tsquery de Postgres: todos los términos obligatorios y
+ * prefijo en el último ("constructora and" -> "CONSTRUCTORA & AND:*").
+ * normalizeName deja solo [A-Z0-9 ], así que no hay operadores que escapar.
+ */
+export function toTsQuery(input: string, prefixLast = true): string | null {
   const tokens = normalizeName(input).split(" ").filter((t) => t.length > 0);
   if (tokens.length === 0) return null;
-  return tokens.map((t, i) => (i === tokens.length - 1 ? `"${t}"*` : `"${t}"`)).join(" ");
+  return tokens.map((t, i) => (prefixLast && i === tokens.length - 1 ? `${t}:*` : t)).join(" & ");
 }

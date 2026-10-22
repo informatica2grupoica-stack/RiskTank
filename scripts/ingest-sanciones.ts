@@ -1,11 +1,12 @@
 // Descarga y carga listas de sanciones públicas: OFAC SDN (EE.UU.) y la lista consolidada de la ONU.
 // Uso: npm run ingest:sanciones
 
+import "./lib/env";
 import fs from "node:fs";
 import path from "node:path";
-import { DATA_DIR, openDb, setFuenteEstado } from "../src/lib/db";
+import { getDb, setFuenteEstado, type Db } from "../src/lib/db";
 import { normalizeName } from "../src/lib/text";
-import { download, parseCsvLine } from "./lib/download";
+import { DATA_DIR, download, parseCsvLine } from "./lib/download";
 
 const RAW_DIR = path.join(DATA_DIR, "raw", "sanciones");
 const OFAC_SDN = "https://www.treasury.gov/ofac/downloads/sdn.csv";
@@ -91,36 +92,42 @@ function readUn(file: string): Row[] {
   return rows;
 }
 
-function load(db: ReturnType<typeof openDb>, fuente: string, rows: Row[]) {
-  const insert = db.prepare(`
-    INSERT INTO sancion (fuente, entidad_id, nombre, nombre_norm, es_alias, tipo, programa, observacion)
-    VALUES (@fuente, @entidad_id, @nombre, @nombre_norm, @es_alias, @tipo, @programa, @observacion)`);
-  db.transaction(() => {
-    db.prepare(`DELETE FROM sancion WHERE fuente = ?`).run(fuente);
-    for (const r of rows) insert.run({ ...r, nombre_norm: normalizeName(r.nombre) });
-  })();
+async function load(db: Db, fuente: string, rows: Row[]) {
+  const data = rows.map((r) => ({
+    fuente: r.fuente,
+    entidadId: r.entidad_id,
+    nombre: r.nombre,
+    nombreNorm: normalizeName(r.nombre),
+    esAlias: r.es_alias === 1,
+    tipo: r.tipo,
+    programa: r.programa,
+    observacion: r.observacion,
+  }));
+  await db.$transaction(async (tx) => {
+    await tx.sancion.deleteMany({ where: { fuente } });
+    for (let i = 0; i < data.length; i += 5000) await tx.sancion.createMany({ data: data.slice(i, i + 5000) });
+  }, { timeout: 120_000 });
 }
 
 async function main() {
-  const db = openDb();
+  const db = getDb();
 
   console.log("OFAC SDN...");
   const sdn = await download(OFAC_SDN, path.join(RAW_DIR, "ofac-sdn.csv"), true);
   const alt = await download(OFAC_ALT, path.join(RAW_DIR, "ofac-alt.csv"), true);
   const ofac = readOfac(sdn, alt);
-  load(db, "ofac", ofac);
-  setFuenteEstado(db, { fuente: "ofac", nombre: "OFAC SDN (EE.UU.)", url: "https://sanctionssearch.ofac.treas.gov/", registros: ofac.length });
+  await load(db, "ofac", ofac);
+  await setFuenteEstado(db, { fuente: "ofac", nombre: "OFAC SDN (EE.UU.)", url: "https://sanctionssearch.ofac.treas.gov/", registros: ofac.length });
   console.log(`  ${ofac.length.toLocaleString("es-CL")} nombres (incluye alias)`);
 
   console.log("ONU lista consolidada...");
   const unFile = await download(UN_XML, path.join(RAW_DIR, "onu-consolidada.xml"), true);
   const un = readUn(unFile);
-  load(db, "onu", un);
-  setFuenteEstado(db, { fuente: "onu", nombre: "Consejo de Seguridad ONU", url: "https://main.un.org/securitycouncil/es/content/un-sc-consolidated-list", registros: un.length });
+  await load(db, "onu", un);
+  await setFuenteEstado(db, { fuente: "onu", nombre: "Consejo de Seguridad ONU", url: "https://main.un.org/securitycouncil/es/content/un-sc-consolidated-list", registros: un.length });
   console.log(`  ${un.length.toLocaleString("es-CL")} nombres (incluye alias)`);
 
-  db.exec(`INSERT INTO sancion_fts(sancion_fts) VALUES ('rebuild')`);
-  db.close();
+  await db.$disconnect();
   console.log("Listo.");
 }
 

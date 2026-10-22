@@ -3,6 +3,9 @@ import path from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 
+/** Carpeta para descargas (no se versiona). */
+export const DATA_DIR = path.resolve(process.env.RISKTANK_DATA_DIR ?? "data");
+
 /**
  * Descarga una URL a disco. Si el archivo ya existe y `force` es falso, lo reutiliza.
  * Escribe primero a un .part para no dejar archivos a medias.

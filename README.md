@@ -5,13 +5,23 @@ Ingresas un RUT o una razón social y obtienes una ficha con datos de la empresa
 
 ## Puesta en marcha
 
+Base de datos: Postgres en [Supabase](https://supabase.com) (plan gratuito) con Prisma.
+
+1. Crea un proyecto en Supabase y copia `.env.example` a `.env.local` con las cadenas de conexión (Project → Connect).
+2. Instala, crea las tablas y carga los datos:
+
 ```bash
 npm install
-npm run ingest      # descarga y carga las fuentes (~300 MB, unos minutos)
-npm run dev         # http://localhost:3000
+npm run db:migrate   # crea tablas, índices de texto completo y activa RLS
+npm run ingest       # descarga las fuentes y las carga en Supabase (~20-40 min la primera vez)
+npm run dev          # http://localhost:3000
 ```
 
-Opcional: copia `.env.example` a `.env.local` y agrega tu ticket de Mercado Público.
+### Deploy en Vercel
+
+En Vercel → Settings → Environment Variables agrega `DATABASE_URL` (transaction pooler, puerto 6543) y,
+opcionalmente, `MERCADOPUBLICO_TICKET`. El build corre `prisma generate` automáticamente (postinstall).
+La carga de datos (`npm run ingest`) se ejecuta desde tu equipo, no en Vercel.
 
 ## Fuentes
 
@@ -50,9 +60,10 @@ Niveles: bajo < 30 ≤ medio < 50 ≤ alto < 75 ≤ crítico. Sin datos en ningu
 
 ```
 scripts/            ingesta de fuentes (tsx)
-src/lib/            rut, db (SQLite + FTS5), reglas de riesgo, perfil, fuentes en línea
+prisma/             esquema y migraciones (índices GIN de texto completo, RLS)
+src/lib/            rut, db (Prisma + pg), reglas de riesgo, perfil, fuentes en línea
 src/app/            páginas (inicio, búsqueda, ficha, fuentes) y rutas API
-data/               descargas y base risktank.db (no se versiona)
+data/               descargas de las fuentes (no se versiona)
 ```
 
 ## Pendiente

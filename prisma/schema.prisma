@@ -1,0 +1,82 @@
+// Esquema de RiskTank (Postgres / Supabase).
+// Los índices de texto completo (GIN sobre to_tsvector) y la función f_unaccent no se pueden
+// expresar en Prisma: están en las migraciones SQL (0001_init, 0002_compactar_res).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Registro de Empresas y Sociedades (Ley 20.659). El dataset publica solo constituciones,
+/// una por RUT. Columnas mínimas para caber en el plan gratuito de Supabase (500 MB).
+model ResRegistro {
+  rut              String    @id @db.VarChar(10)
+  razonSocial      String    @map("razon_social")
+  fechaActuacion   DateTime? @map("fecha_actuacion") @db.Date
+  fechaAprobacion  DateTime? @map("fecha_aprobacion") @db.Date
+  tipoSociedad     String?   @map("tipo_sociedad") @db.VarChar(8)
+  tipoActuacion    String?   @map("tipo_actuacion") @db.VarChar(24)
+  capital          BigInt?
+  comunaSocial     String?   @map("comuna_social") @db.VarChar(40)
+  regionSocial     Int?      @map("region_social") @db.SmallInt
+  regionTributaria Int?      @map("region_tributaria") @db.SmallInt
+  /// Archivo de origen (año del CSV), para recargar un archivo sin duplicar.
+  lote             Int       @db.SmallInt
+
+  @@map("res_registro")
+}
+
+/// Listas de sanciones (OFAC SDN, ONU), una fila por nombre o alias.
+model Sancion {
+  id          Int     @id @default(autoincrement())
+  fuente      String  @db.VarChar(10)
+  entidadId   String  @map("entidad_id")
+  nombre      String
+  nombreNorm  String  @map("nombre_norm")
+  esAlias     Boolean @default(false) @map("es_alias")
+  tipo        String?
+  programa    String?
+  observacion String?
+
+  @@index([fuente])
+  @@map("sancion")
+}
+
+model FuenteEstado {
+  fuente        String   @id
+  nombre        String
+  url           String?
+  actualizadoEn DateTime @map("actualizado_en")
+  registros     Int
+
+  @@map("fuente_estado")
+}
+
+/// Caché de consultas en línea (Mercado Público).
+model CacheExterno {
+  fuente   String
+  clave    String
+  datos    Json
+  creadoEn DateTime @map("creado_en")
+
+  @@id([fuente, clave])
+  @@map("cache_externo")
+}
+
+/// Historial de evaluaciones, para ver la evolución del score.
+model Consulta {
+  id       Int      @id @default(autoincrement())
+  rut      String   @db.VarChar(10)
+  creadoEn DateTime @default(now()) @map("creado_en")
+  score    Int?     @db.SmallInt
+  nivel    String   @db.VarChar(10)
+  alertas  Json
+
+  @@index([rut, creadoEn])
+  @@index([creadoEn])
+  @@map("consulta")
+}

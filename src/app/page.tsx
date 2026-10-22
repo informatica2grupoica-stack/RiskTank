@@ -7,10 +7,9 @@ import { formatRut } from "@/lib/rut";
 
 export const dynamic = "force-dynamic";
 
-export default function Home() {
+export default async function Home() {
   const db = getDb();
-  const recientes = ultimasConsultas(db);
-  const fuentes = db.prepare(`SELECT COUNT(*) n FROM fuente_estado`).get() as { n: number };
+  const [recientes, fuentes] = await Promise.all([ultimasConsultas(db), db.fuenteEstado.count()]);
 
   return (
     <div className="space-y-12">
@@ -22,7 +21,7 @@ export default function Home() {
           Ingresa un RUT y obtén en segundos un perfil de riesgo con alertas, score y datos clave, a partir de fuentes públicas.
         </p>
         <SearchBox autoFocus />
-        {fuentes.n === 0 && (
+        {fuentes === 0 && (
           <p className="text-sm text-amber-700 dark:text-amber-400">
             Aún no hay datos cargados. Ejecuta <code className="font-mono">npm run ingest</code> para descargar las fuentes.
           </p>

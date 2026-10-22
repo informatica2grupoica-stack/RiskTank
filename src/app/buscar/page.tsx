@@ -16,7 +16,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<{
 
   // Parece un RUT (solo dígitos, puntos, guion y K) pero el dígito verificador no cuadra.
   const pareceRut = /^[\d.\s-]+[kK]?$/.test(q) && cleanRut(q).length >= 7;
-  const resultados = pareceRut ? [] : buscarPorNombre(getDb(), q, 30);
+  const resultados = pareceRut ? [] : await buscarPorNombre(getDb(), q, 30);
 
   return (
     <div className="space-y-6">
