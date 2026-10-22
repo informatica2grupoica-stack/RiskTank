@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { FichaSiiCard } from "@/components/FichaSiiCard";
 import { NIVEL, NivelBadge, ScoreRing, SEVERIDAD } from "@/components/risk-ui";
 import { getDb } from "@/lib/db";
 import { construirPerfil } from "@/lib/profile";
@@ -41,7 +42,7 @@ export default async function Empresa({ params }: { params: Promise<{ rut: strin
           <p className="text-sm text-muted">
             {p.nivel === "sin_datos"
               ? p.esEmpresa
-                ? "No encontramos este RUT en las fuentes cargadas. El RES solo incluye sociedades constituidas por «Tu Empresa en un Día» desde 2013, así que la ausencia no es en sí una señal de riesgo."
+                ? "No encontramos este RUT en el SII ni en el Registro de Empresas. Revisa que el RUT sea correcto."
                 : "Este RUT parece de persona natural. Por ahora solo se cruza contra listas de sanciones por nombre."
               : `Score calculado con ${p.alertas.length} señales. 0 = sin riesgo detectado, 100 = riesgo máximo.`}
           </p>
@@ -74,7 +75,12 @@ export default async function Empresa({ params }: { params: Promise<{ rut: strin
 
         {/* Datos clave */}
         <section className="rounded-xl border border-border bg-surface">
-          <h2 className="px-5 py-4 border-b border-border font-medium">Datos de la empresa</h2>
+          <h2 className="px-5 py-4 border-b border-border font-medium">Registro de Empresas</h2>
+          {p.actuaciones.length === 0 && (
+            <p className="px-5 pt-4 text-xs text-muted">
+              No está en el RES: solo incluye sociedades creadas por «Tu Empresa en un Día» desde 2013.
+            </p>
+          )}
           <dl className="px-5 py-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
             <dt className="text-muted">Constitución</dt><dd>{fecha(constitucion?.fecha_actuacion)}</dd>
             <dt className="text-muted">Aprobación SII</dt><dd>{fecha(constitucion?.fecha_aprobacion)}</dd>
@@ -92,6 +98,8 @@ export default async function Empresa({ params }: { params: Promise<{ rut: strin
           </dl>
         </section>
       </div>
+
+      <FichaSiiCard sii={p.sii} />
 
       {/* Actuaciones */}
       {p.actuaciones.length > 0 && (

@@ -41,3 +41,34 @@ test("coincidencia exacta en sanciones es crítica y va primero", () => {
   assert.equal(r.nivel, "critico");
   assert.equal(r.alertas[0].codigo, "SANCION_EXACTA");
 });
+
+test("término de giro en el SII es crítico", () => {
+  const r = evaluarRiesgo({ hoy, actuaciones: [], sanciones: [], sii: { n: "X SPA", ia: "2015-01-01", tg: "2025-03-01" } });
+  assert.equal(r.alertas[0].codigo, "TERMINO_GIRO");
+  assert.equal(r.nivel, "critico");
+});
+
+test("sin RES, la antigüedad sale del inicio de actividades del SII", () => {
+  const r = evaluarRiesgo({
+    hoy,
+    actuaciones: [],
+    sanciones: [],
+    sii: { n: "X LTDA", ia: "1995-01-01", ac: [[461000, "1995-01-01", 1, 1]], e: { a: 2024, tv: 10, tr: 50 } },
+  });
+  const codigos = r.alertas.map((a) => a.codigo);
+  assert.ok(codigos.includes("EMPRESA_ANTIGUA"));
+  assert.ok(codigos.includes("EMPRESA_CONSOLIDADA"));
+  assert.equal(r.nivel, "bajo");
+});
+
+test("sin ventas y caída de tramo no se duplican", () => {
+  const r = evaluarRiesgo({
+    hoy,
+    actuaciones: [],
+    sanciones: [],
+    sii: { n: "X", ia: "2020-01-01", ac: [[1, null, 1, 1]], e: { a: 2024, tv: 1 }, e0: { a: 2023, tv: 6 } },
+  });
+  const codigos = r.alertas.map((a) => a.codigo);
+  assert.ok(codigos.includes("SIN_VENTAS"));
+  assert.ok(!codigos.includes("CAIDA_VENTAS"));
+});

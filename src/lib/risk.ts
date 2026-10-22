@@ -1,5 +1,6 @@
 // Motor de reglas: convierte los datos recopilados en alertas y un score de riesgo 0–100
 // (más alto = más riesgo). Es determinístico y cada punto queda explicado por una alerta.
+import { tramoVentas, type FichaSii } from "./sii";
 
 export type Severidad = "critica" | "alta" | "media" | "baja" | "info" | "positiva";
 export type Nivel = "bajo" | "medio" | "alto" | "critico" | "sin_datos";
@@ -36,6 +37,7 @@ export type RiskInput = {
   actuaciones: Actuacion[]; // ordenadas de la más antigua a la más reciente
   sanciones: CoincidenciaSancion[];
   mercadoPublico?: { registrado: boolean } | null;
+  sii?: FichaSii | null;
 };
 
 const DIA = 24 * 60 * 60 * 1000;
@@ -73,16 +75,23 @@ export function evaluarRiesgo(input: RiskInput): { score: number | null; nivel: 
 
   const constitucion = actuaciones.find((a) => a.tipo_actuacion?.startsWith("CONSTITU"));
   const ultima = actuaciones.at(-1);
+  const sii = input.sii;
 
-  if (constitucion?.fecha_actuacion) {
-    const meses = mesesEntre(constitucion.fecha_actuacion, hoy);
+  // Antigüedad: constitución en el RES o, si no está, inicio de actividades en el SII.
+  const inicio = constitucion?.fecha_actuacion
+    ? { fecha: constitucion.fecha_actuacion, texto: "Constituida", fuente: "res" }
+    : sii?.ia
+      ? { fecha: sii.ia, texto: "Inicio de actividades", fuente: "sii" }
+      : null;
+  if (inicio) {
+    const meses = mesesEntre(inicio.fecha, hoy);
     if (meses < 6) {
       alertas.push({
         codigo: "EMPRESA_MUY_NUEVA",
         severidad: "alta",
-        titulo: "Empresa constituida hace menos de 6 meses",
-        detalle: `Constituida el ${fechaCl(constitucion.fecha_actuacion)}. Sin historial comercial suficiente.`,
-        fuente: "res",
+        titulo: "Empresa con menos de 6 meses",
+        detalle: `${inicio.texto} el ${fechaCl(inicio.fecha)}. Sin historial comercial suficiente.`,
+        fuente: inicio.fuente,
         puntos: 25,
       });
     } else if (meses < 12) {
@@ -90,17 +99,17 @@ export function evaluarRiesgo(input: RiskInput): { score: number | null; nivel: 
         codigo: "EMPRESA_NUEVA",
         severidad: "media",
         titulo: "Empresa con menos de 1 año",
-        detalle: `Constituida el ${fechaCl(constitucion.fecha_actuacion)}.`,
-        fuente: "res",
+        detalle: `${inicio.texto} el ${fechaCl(inicio.fecha)}.`,
+        fuente: inicio.fuente,
         puntos: 12,
       });
     } else if (meses >= 36) {
       alertas.push({
         codigo: "EMPRESA_ANTIGUA",
         severidad: "positiva",
-        titulo: "Más de 3 años desde su constitución",
-        detalle: `Constituida el ${fechaCl(constitucion.fecha_actuacion)}.`,
-        fuente: "res",
+        titulo: "Más de 3 años de antigüedad",
+        detalle: `${inicio.texto} el ${fechaCl(inicio.fecha)}.`,
+        fuente: inicio.fuente,
         puntos: -5,
       });
     }
@@ -168,6 +177,8 @@ export function evaluarRiesgo(input: RiskInput): { score: number | null; nivel: 
     });
   }
 
+  if (sii) alertas.push(...alertasSii(sii));
+
   if (input.mercadoPublico?.registrado) {
     alertas.push({
       codigo: "PROVEEDOR_ESTADO",
@@ -179,7 +190,8 @@ export function evaluarRiesgo(input: RiskInput): { score: number | null; nivel: 
     });
   }
 
-  const hayDatos = actuaciones.length > 0 || input.sanciones.length > 0 || Boolean(input.mercadoPublico?.registrado);
+  const hayDatos =
+    actuaciones.length > 0 || input.sanciones.length > 0 || Boolean(input.mercadoPublico?.registrado) || Boolean(sii);
   if (!hayDatos) return { score: null, nivel: "sin_datos", alertas };
 
   // Base 20: todo tercero parte con algo de riesgo hasta que se demuestre lo contrario.
@@ -188,4 +200,84 @@ export function evaluarRiesgo(input: RiskInput): { score: number | null; nivel: 
   const orden: Severidad[] = ["critica", "alta", "media", "baja", "info", "positiva"];
   alertas.sort((a, b) => orden.indexOf(a.severidad) - orden.indexOf(b.severidad));
   return { score, nivel, alertas };
+}
+
+/** Señales de la ficha tributaria del SII. */
+function alertasSii(sii: FichaSii): Alerta[] {
+  const out: Alerta[] = [];
+  const add = (a: Omit<Alerta, "fuente">) => out.push({ ...a, fuente: "sii" });
+
+  if (sii.tg) {
+    add({
+      codigo: "TERMINO_GIRO",
+      severidad: "critica",
+      titulo: "Registra término de giro en el SII",
+      detalle: `Término de giro el ${fechaCl(sii.tg)}${sii.e?.ttg ? ` (${sii.e.ttg.toLowerCase()})` : ""}. Ya no debería estar operando.`,
+      puntos: 60,
+    });
+  } else if (!sii.ac?.length) {
+    add({
+      codigo: "SIN_ACTIVIDADES",
+      severidad: "media",
+      titulo: "Sin actividades económicas vigentes en el SII",
+      detalle: "No tiene giros inscritos y vigentes.",
+      puntos: 10,
+    });
+  }
+
+  const e = sii.e;
+  if (e?.tv === 1) {
+    add({
+      codigo: "SIN_VENTAS",
+      severidad: "media",
+      titulo: `Sin ventas declaradas en ${e.a}`,
+      detalle: "Tramo de ventas «sin ventas o sin información» en la nómina del SII.",
+      puntos: 12,
+    });
+  } else if (e?.tv != null && sii.e0?.tv != null && sii.e0.tv - e.tv >= 2) {
+    add({
+      codigo: "CAIDA_VENTAS",
+      severidad: "media",
+      titulo: "Caída fuerte en el tramo de ventas",
+      detalle: `De ${tramoVentas(sii.e0.tv)?.detalle} en ${sii.e0.a} a ${tramoVentas(e.tv)?.detalle} en ${e.a}.`,
+      puntos: 10,
+    });
+  }
+  if (e?.tv != null && e.tv >= 8) {
+    add({
+      codigo: "EMPRESA_CONSOLIDADA",
+      severidad: "positiva",
+      titulo: `Empresa ${tramoVentas(e.tv)?.tamano.toLowerCase()} según ventas`,
+      detalle: `${tramoVentas(e.tv)?.detalle} en ${e.a}.`,
+      puntos: -5,
+    });
+  }
+  if (e?.tr === 0 && (e.tv ?? 0) > 1) {
+    add({
+      codigo: "SIN_TRABAJADORES",
+      severidad: "baja",
+      titulo: "Sin trabajadores dependientes informados",
+      detalle: `Año comercial ${e.a}.`,
+      puntos: 4,
+    });
+  }
+  if (e?.cn != null) {
+    add({
+      codigo: "CAPITAL_PROPIO_NEGATIVO",
+      severidad: "media",
+      titulo: "Capital propio tributario negativo",
+      detalle: `Tramo ${e.cn} de capital propio negativo en ${e.a}: el patrimonio tributario no cubre sus deudas.`,
+      puntos: 10,
+    });
+  }
+  if ((sii.dc ?? 0) >= 2) {
+    add({
+      codigo: "DOMICILIO_INESTABLE",
+      severidad: (sii.dc ?? 0) >= 3 ? "media" : "baja",
+      titulo: "Cambios frecuentes de domicilio",
+      detalle: `${sii.dc} cambios de domicilio tributario en los últimos 24 meses.`,
+      puntos: (sii.dc ?? 0) >= 3 ? 10 : 4,
+    });
+  }
+  return out;
 }

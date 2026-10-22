@@ -13,6 +13,8 @@
     "db:migrate": "prisma migrate deploy",
     "ingest:res": "tsx scripts/ingest-res.ts",
     "ingest:sanciones": "tsx scripts/ingest-sanciones.ts",
+    "build:sii": "node --max-old-space-size=8192 --import tsx scripts/build-sii.ts",
+    "upload:sii": "tsx scripts/upload-sii.ts",
     "ingest": "npm run ingest:res && npm run ingest:sanciones"
   },
   "dependencies": {
@@ -30,12 +32,14 @@
     "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/yauzl": "^3.4.0",
     "dotenv": "^18.0.8",
     "eslint": "^9",
     "eslint-config-next": "^16.4.2",
     "prisma": "^7.10.1",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "yauzl": "^3.4.0"
   }
 }

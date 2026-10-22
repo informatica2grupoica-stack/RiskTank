@@ -2,6 +2,7 @@
 import type { Db } from "./db";
 import { evaluarRiesgo, type Actuacion, type Alerta, type CoincidenciaSancion, type Nivel } from "./risk";
 import { consultarProveedor, type MercadoPublicoResult } from "./sources/mercadopublico";
+import { consultarSii, type ResultadoSii } from "./sii";
 import { nameKey, significantTokens, toTsQuery } from "./text";
 import { isLikelyCompany } from "./rut";
 
@@ -17,6 +18,7 @@ export type Perfil = {
   actuaciones: ActuacionRes[];
   sanciones: CoincidenciaSancion[];
   mercadoPublico: MercadoPublicoResult;
+  sii: ResultadoSii;
   score: number | null;
   nivel: Nivel;
   alertas: Alerta[];
@@ -52,10 +54,12 @@ export async function buscarSanciones(db: Db, nombre: string): Promise<Coinciden
 }
 
 export async function construirPerfil(db: Db, rut: string): Promise<Perfil> {
-  const [registros, mercadoPublico] = await Promise.all([
+  const [registros, mercadoPublico, sii] = await Promise.all([
     db.resRegistro.findMany({ where: { rut }, orderBy: { fechaActuacion: "asc" } }),
     consultarProveedor(db, rut),
+    consultarSii(rut),
   ]);
+  const fichaSii = sii.estado === "ok" ? sii.ficha : null;
   const actuaciones: ActuacionRes[] = registros.map((r) => ({
     razon_social: r.razonSocial,
     fecha_actuacion: isoDate(r.fechaActuacion),
@@ -69,7 +73,7 @@ export async function construirPerfil(db: Db, rut: string): Promise<Perfil> {
   }));
 
   const nombreMp = mercadoPublico.estado === "ok" ? (mercadoPublico.nombre ?? null) : null;
-  const razonSocial = actuaciones.at(-1)?.razon_social ?? nombreMp;
+  const razonSocial = actuaciones.at(-1)?.razon_social ?? fichaSii?.n ?? nombreMp;
   const sanciones = razonSocial ? await buscarSanciones(db, razonSocial) : [];
 
   const { score, nivel, alertas } = evaluarRiesgo({
@@ -77,6 +81,7 @@ export async function construirPerfil(db: Db, rut: string): Promise<Perfil> {
     actuaciones,
     sanciones,
     mercadoPublico: mercadoPublico.estado === "ok" ? mercadoPublico : null,
+    sii: fichaSii,
   });
 
   const generado = await db.consulta.create({
@@ -95,6 +100,7 @@ export async function construirPerfil(db: Db, rut: string): Promise<Perfil> {
     actuaciones,
     sanciones,
     mercadoPublico,
+    sii,
     score,
     nivel,
     alertas,

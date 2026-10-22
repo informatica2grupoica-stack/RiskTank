@@ -1,0 +1,214 @@
+{
+ "211": {
+  "subtipo": "SOC. RESPONSABILIDAD LIMITADA",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "212": {
+  "subtipo": "EMPR. INDIVIDUAL RESP. LTDA.",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "213": {
+  "subtipo": "SOCIEDADES ANONIMAS CERRADAS",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "214": {
+  "subtipo": "SOCIEDADES ANONIMAS ABIERTAS",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "215": {
+  "subtipo": "SOCIEDA COLECTIVA CIVIL",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "216": {
+  "subtipo": "ENCOMANDITAS POR ACCIONES",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "217": {
+  "subtipo": "SOC LEGAL MINERA",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "218": {
+  "subtipo": "BANCOS",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "219": {
+  "subtipo": "ADMINISTRADORA FONDOS DE PENSIONES",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "220": {
+  "subtipo": "COMPANIAS DE SEGURO",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "221": {
+  "subtipo": "SOC. PLATAFORMA ART 41 D",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "222": {
+  "subtipo": "SOC. ANONIMA DEPORTIVA",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "223": {
+  "subtipo": "SOCIEDAD POR ACCIONES",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "224": {
+  "subtipo": "ENCOMANDITA SIMPLE",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "225": {
+  "subtipo": "FONDO DE INVERSION PUBLICO",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "226": {
+  "subtipo": "FONDO DE INVERSION PRIVADO",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "227": {
+  "subtipo": "SOCIEDAD ANONIMA CON GARANTIA RECIPROCA",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "228": {
+  "subtipo": "SOCIEDAD COLECTIVA COMERCIAL",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "229": {
+  "subtipo": "FONDO MUTUO",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "230": {
+  "subtipo": "SOCIEDAD ANONIMA ESPECIAL",
+  "tipo": "PERSONA JURIDICA COMERCIAL"
+ },
+ "311": {
+  "subtipo": "SOCIEDADES DE HECHO",
+  "tipo": "SIN PER. JURIDICA"
+ },
+ "312": {
+  "subtipo": "COMUNIDADES DE EDIFICIOS",
+  "tipo": "SIN PER. JURIDICA"
+ },
+ "313": {
+  "subtipo": "SUCESIONES O COMUNIDADES HERED",
+  "tipo": "SIN PER. JURIDICA"
+ },
+ "314": {
+  "subtipo": "COMUNIDAD DISOLUCION SOC. CONYUGAL",
+  "tipo": "SIN PER. JURIDICA"
+ },
+ "315": {
+  "subtipo": "OTRAS ORGANIZACIONES SIN P. JURIDICA",
+  "tipo": "SIN PER. JURIDICA"
+ },
+ "411": {
+  "subtipo": "ENTIDAD SIN RESIDENCIA",
+  "tipo": "SOCIEDADES EXTRANJERAS"
+ },
+ "413": {
+  "subtipo": "PRESIDENCIA REGIONAL",
+  "tipo": "SOCIEDADES EXTRANJERAS"
+ },
+ "414": {
+  "subtipo": "SOCIEDAD EXTRANJERA RES 5412/2000",
+  "tipo": "SOCIEDADES EXTRANJERAS"
+ },
+ "415": {
+  "subtipo": "OTRO ESTABLECIMIENTO PERMANENTE",
+  "tipo": "SOCIEDADES EXTRANJERAS"
+ },
+ "416": {
+  "subtipo": "AGENCIA",
+  "tipo": "SOCIEDADES EXTRANJERAS"
+ },
+ "417": {
+  "subtipo": "PLATAFORMA DIGITAL",
+  "tipo": "SOCIEDADES EXTRANJERAS"
+ },
+ "511": {
+  "subtipo": "MINISTERIOS",
+  "tipo": "INSTITUCIONES FISCALES"
+ },
+ "512": {
+  "subtipo": "ORGANISMO AUTONOMO DEL ESTADO",
+  "tipo": "INSTITUCIONES FISCALES"
+ },
+ "513": {
+  "subtipo": "ORG. MINISTERIO SALUD",
+  "tipo": "INSTITUCIONES FISCALES"
+ },
+ "514": {
+  "subtipo": "ORG. MINISTERIO JUSTICIA",
+  "tipo": "INSTITUCIONES FISCALES"
+ },
+ "515": {
+  "subtipo": "ORG. MINISTERIO DEFENSA",
+  "tipo": "INSTITUCIONES FISCALES"
+ },
+ "516": {
+  "subtipo": "ORG. EDUCACION SUPERIOR",
+  "tipo": "INSTITUCIONES FISCALES"
+ },
+ "517": {
+  "subtipo": "ORG. ADMINISTRACION PUBLICA",
+  "tipo": "INSTITUCIONES FISCALES"
+ },
+ "611": {
+  "subtipo": "MUNICIPALIDAD",
+  "tipo": "MUNICIPALIDADES"
+ },
+ "612": {
+  "subtipo": "LICEO O COLEGIO MUNICIPAL",
+  "tipo": "MUNICIPALIDADES"
+ },
+ "613": {
+  "subtipo": "OTRO ORG. MUNICIPAL",
+  "tipo": "MUNICIPALIDADES"
+ },
+ "711": {
+  "subtipo": "ORGANISMOS INTERNACIONALES",
+  "tipo": "ORGANISMOS INTERNACIONALES"
+ },
+ "712": {
+  "subtipo": "EMBAJADAS",
+  "tipo": "ORGANISMOS INTERNACIONALES"
+ },
+ "811": {
+  "subtipo": "JUNTA DE VECINOS, ORG. COMUNITARIA",
+  "tipo": "ORG. SIN FINES DE LUCRO"
+ },
+ "812": {
+  "subtipo": "CLUB DEPORTIVO",
+  "tipo": "ORG. SIN FINES DE LUCRO"
+ },
+ "813": {
+  "subtipo": "FUNDACION",
+  "tipo": "ORG. SIN FINES DE LUCRO"
+ },
+ "814": {
+  "subtipo": "CORPORACION",
+  "tipo": "ORG. SIN FINES DE LUCRO"
+ },
+ "815": {
+  "subtipo": "ASOC. GREMIAL",
+  "tipo": "ORG. SIN FINES DE LUCRO"
+ },
+ "816": {
+  "subtipo": "SINDICATO",
+  "tipo": "ORG. SIN FINES DE LUCRO"
+ },
+ "817": {
+  "subtipo": "COOPERATIVA",
+  "tipo": "ORG. SIN FINES DE LUCRO"
+ },
+ "818": {
+  "subtipo": "OTRA OSFL",
+  "tipo": "ORG. SIN FINES DE LUCRO"
+ },
+ "819": {
+  "subtipo": "CORPORACION EDUCACIONAL LEY 20845",
+  "tipo": "ORG. SIN FINES DE LUCRO"
+ },
+ "820": {
+  "subtipo": "ENTIDAD INDIVIDUAL EDUCACIONAL LEY 20845",
+  "tipo": "ORG. SIN FINES DE LUCRO"
+ }
+}
